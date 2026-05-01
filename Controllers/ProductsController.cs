@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductService.Models;
 using ProductService.Repositories;
 
 namespace ProductService.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
@@ -15,14 +17,12 @@ public class ProductsController : ControllerBase
         _repo = repo;
     }
 
-    /* GET /api/products */
     [HttpGet]
     public ActionResult<List<Product>> GetAll()
     {
         return Ok(_repo.GetAll());
     }
 
-    /* GET /api/products/1 */
     [HttpGet("{id}")]
     public ActionResult<Product> GetById(int id)
     {
@@ -32,19 +32,15 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
-    /* POST /api/products */
     [HttpPost]
     public ActionResult<Product> Create([FromBody] Product product)
     {
         if (string.IsNullOrWhiteSpace(product.Name))
             return BadRequest(new { message = "Ad bosh ola bilmez" });
-
         var created = _repo.Add(product);
-        return CreatedAtAction(nameof(GetById),
-            new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    /* PUT /api/products/1 */
     [HttpPut("{id}")]
     public ActionResult<Product> Update(int id, [FromBody] Product product)
     {
@@ -54,7 +50,6 @@ public class ProductsController : ControllerBase
         return Ok(updated);
     }
 
-    /* DELETE /api/products/1 */
     [HttpDelete("{id}")]
     public ActionResult Delete(int id)
     {
