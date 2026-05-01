@@ -1,30 +1,29 @@
+using Microsoft.EntityFrameworkCore;
+using ProductService.Data;
 using ProductService.Models;
 
 namespace ProductService.Repositories;
 
 public class ProductRepository
 {
-    private readonly List<Product> _products = new();
-    private int _nextId = 1;
+    private readonly AppDbContext _db;
 
-    public ProductRepository()
+    public ProductRepository(AppDbContext db)
     {
-        /* başlanğıc məlumatlar */
-        Add(new Product { Name = "Laptop",    Description = "Gaming laptop",  Price = 1200.00m, Stock = 10 });
-        Add(new Product { Name = "Mouse",     Description = "Wireless mouse", Price = 25.00m,   Stock = 50 });
-        Add(new Product { Name = "Keyboard",  Description = "Mechanical",     Price = 75.00m,   Stock = 30 });
+        _db = db;
     }
 
-    public List<Product> GetAll() => _products;
+    public List<Product> GetAll() =>
+        _db.Products.ToList();
 
     public Product? GetById(int id) =>
-        _products.FirstOrDefault(p => p.Id == id);
+        _db.Products.FirstOrDefault(p => p.Id == id);
 
     public Product Add(Product product)
     {
-        product.Id        = _nextId++;
         product.CreatedAt = DateTime.UtcNow;
-        _products.Add(product);
+        _db.Products.Add(product);
+        _db.SaveChanges();
         return product;
     }
 
@@ -37,6 +36,7 @@ public class ProductRepository
         product.Description = updated.Description;
         product.Price       = updated.Price;
         product.Stock       = updated.Stock;
+        _db.SaveChanges();
         return product;
     }
 
@@ -44,7 +44,8 @@ public class ProductRepository
     {
         var product = GetById(id);
         if (product is null) return false;
-        _products.Remove(product);
+        _db.Products.Remove(product);
+        _db.SaveChanges();
         return true;
     }
 }
